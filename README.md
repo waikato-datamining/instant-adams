@@ -51,7 +51,7 @@ Options:
 
 The following examples boostrap an ADAMS application with 
 ```
-java -jar instant-adams-0.0.1-spring-boot.jar \ 
+java -jar instant-adams-0.0.1-spring-boot.jar \
   -M adams-weka,adams-groovy,adams-excel \
   -V 20.2.0-SNAPSHOT \
   -o ./out \
