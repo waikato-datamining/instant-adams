@@ -228,6 +228,44 @@ public class Main {
   }
 
   /**
+   * Sets the modules to use for bootstrapping.
+   *
+   * @param modules	the modules
+   * @return		itself
+   */
+  public Main modules(String... modules) {
+    StringBuilder	all;
+
+    if (modules != null) {
+      all = new StringBuilder();
+      for (String module : modules) {
+	if (all.length() > 0)
+	  all.append(",");
+	all.append(module);
+      }
+      m_Modules = all.toString();
+    }
+    else {
+      m_Modules = null;
+    }
+    return this;
+  }
+
+  /**
+   * Sets the modules to use for bootstrapping.
+   *
+   * @param modules	the modules
+   * @return		itself
+   */
+  public Main modules(List<String> modules) {
+    if (modules != null)
+      modules(modules.toArray(new String[0]));
+    else
+      m_Modules = null;
+    return this;
+  }
+
+  /**
    * Returns the modules.
    *
    * @return		the modules (comma-separated list), if not yet set
