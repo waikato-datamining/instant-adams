@@ -472,7 +472,7 @@ public class Main {
       .required(false)
       .multiple(true)
       .dest("dependencies")
-      .help("The additional maven dependencies to use for bootstrapping ADAMS (group:artifact:version), e.g.: nz.ac.waikato.cms.weka:weka-dev:3.9.4");
+      .help("The additional maven dependencies to use for bootstrapping ADAMS (group:artifact:version), e.g.: nz.ac.waikato.cms.weka:kfGroovy:1.0.12");
     parser.addOption("-D", "--dependency-file")
       .required(false)
       .multiple(true)
