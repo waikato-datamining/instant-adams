@@ -80,7 +80,7 @@ public class BootstrapTest {
 ```
 
 
-## Release
+## Releases
 
 * [0.0.1](https://github.com/waikato-datamining/instant-adams/releases/download/instant-adams-0.0.1/instant-adams-0.0.1-spring-boot.jar)
 
