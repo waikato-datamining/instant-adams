@@ -195,6 +195,7 @@
             <configuration>
               <classifier>spring-boot</classifier>
               <mainClass>adams.bootstrap.Main</mainClass>
+              <attach>false</attach>
             </configuration>
           </execution>
         </executions>
