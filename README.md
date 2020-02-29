@@ -1,5 +1,8 @@
 # instant-adams
 Boostrapping ADAMS applications simply from list of modules, without compilation.
+You can either generate cross-platform applications, by using shell scripts for 
+Linux/Mac and batch files for Windows, or Linux packages for Debian (`.deb`) 
+and/or Redhat (`.rpm`).
 
 ## Command-line
 
@@ -8,8 +11,9 @@ Allows bootstrapping of ADAMS applications by simply supplying the modules.
 
 Usage: [--help] [-m MAVEN_HOME]
        [-u MAVEN_USER_SETTINGS]
-       [-j JAVA_HOME] -M MODULES -V VERSION [-d DEPENDENCIES...]
-       [-D DEPENDENCY_FILES...] [-s] -o OUTPUT_DIR [-v JVM...] [-c MAIN_CLASS]
+       [-j JAVA_HOME] [-p POM_TEMPLATE] [-n NAME] -M MODULES -V VERSION
+       [-d DEPENDENCIES...] [-D DEPENDENCY_FILES...] [-s] -o OUTPUT_DIR [-C]
+       [-v JVM...] [-c MAIN_CLASS] [--deb] [--rpm]
 
 Options:
 -m, --maven_home MAVEN_HOME
@@ -20,6 +24,12 @@ Options:
 
 -j, --java_home JAVA_HOME
 	The Java home to use for the Maven execution.
+
+-p, --pom_template POM_TEMPLATE
+	The alternative template for the pom.xml to use.
+
+-n, --name NAME
+	The name to use for the project in the pom.xml
 
 -M, --module MODULES
 	The comma-separated list of ADAMS modules to use for the application, e.g.: adams-weka,adams-groovy,adams-excel
@@ -39,26 +49,40 @@ Options:
 -o, --output_dir OUTPUT_DIR
 	The directory to output the bootstrapped ADAMS application in.
 
+-C, --clean
+	If enabled, the 'clean' goals gets executed.
+
 -v, --jvm JVM
 	The parameters to pass to the JVM before launching the application in the scripts.
 
 -c, --main_class MAIN_CLASS
 	The main class to launch in the scripts.
+
+--deb
+	If enabled, a Debian .deb package is generated. Required tools: fakeroot, dpkg-deb
+
+--rpm
+	If enabled, a Redhat .rpm package is generated.
 ```
 
 
-## Example
+## Examples
 
-The following examples boostrap an ADAMS application with 
+## Cross-platform
+
+The following examples bootstrap an ADAMS application with support for
+Weka, Groovy and Excel:
+ 
 ```
 java -jar instant-adams-0.0.1-spring-boot.jar \
+  -C \
   -M adams-weka,adams-groovy,adams-excel \
   -V 20.2.0-SNAPSHOT \
   -o ./out \
   -v -Xmx1g
 ```
 
-And using Java:
+And the same using Java:
 
 ```java
 import adams.bootstrap.Main;
@@ -68,6 +92,7 @@ public class BootstrapTest {
   
   public static void main(String[] args) {
     Main main = new Main()
+      .clean(true)
       .modules("adams-weka,adams-groovy,adams-excel")
       .version("20.2.0-SNAPSHOT")
       .outputDir(new File("./out"))
@@ -79,9 +104,49 @@ public class BootstrapTest {
 } 
 ```
 
+### Debian package
+
+The same, but compiled as Debian (.deb) package:
+ 
+```
+java -jar instant-adams-0.0.1-spring-boot.jar \
+  -C \
+  -M adams-weka,adams-groovy,adams-excel \
+  -n adams-test \
+  -V 20.2.0-SNAPSHOT \
+  -o ./out \
+  -v -Xmx1g \
+  --deb
+```
+
+And the same using Java:
+
+```java
+import adams.bootstrap.Main;
+import java.io.File;
+
+public class BootstrapTest {
+  
+  public static void main(String[] args) {
+    Main main = new Main()
+      .clean(true)
+      .modules("adams-weka,adams-groovy,adams-excel")
+      .name("adams-test")
+      .version("20.2.0-SNAPSHOT")
+      .outputDir(new File("./out"))
+      .jvm("-Xmx1g")
+      .debian(true);
+    String result = main.execute();
+    if (result != null)
+      System.err.println(result);
+  }
+} 
+```
+
 
 ## Releases
 
+* [0.1.0](https://github.com/waikato-datamining/instant-adams/releases/download/instant-adams-0.1.0/instant-adams-0.1.0-spring-boot.jar)
 * [0.0.1](https://github.com/waikato-datamining/instant-adams/releases/download/instant-adams-0.0.1/instant-adams-0.0.1-spring-boot.jar)
 
 
@@ -91,6 +156,6 @@ public class BootstrapTest {
     <dependency>
       <groupId>nz.ac.waikato.cms.adams</groupId>
       <artifactId>instant-adams</artifactId>
-      <version>0.0.1</version>
+      <version>0.1.0</version>
     </dependency>
 ```

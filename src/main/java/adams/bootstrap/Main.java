@@ -20,9 +20,11 @@
 
 package adams.bootstrap;
 
+import com.github.fracpete.bootstrapp.core.Template;
 import com.github.fracpete.requests4j.Requests;
 import com.github.fracpete.requests4j.response.BasicResponse;
 import com.github.fracpete.requests4j.response.Response;
+import com.github.fracpete.resourceextractor4j.Files;
 import com.github.fracpete.simpleargparse4j.ArgumentParser;
 import com.github.fracpete.simpleargparse4j.ArgumentParserException;
 import com.github.fracpete.simpleargparse4j.Namespace;
@@ -49,6 +51,12 @@ public class Main {
   /** the environment variable for the instant adams home directory. */
   public final static String HOME_DIR_ENV = "INSTANTADAMS_HOME";
 
+  /** the bundled pom template. */
+  public final static String RESOURCES = "adams/bootstrap";
+
+  /** the bundled pom template. */
+  public final static String POMTEMPLATE_FILE = "instant-adams.xml";
+
   /** the alternative maven installation. */
   protected File m_MavenHome;
 
@@ -66,6 +74,18 @@ public class Main {
 
   /** the output directory for maven. */
   protected File m_OutputDirMaven;
+
+  /** the pom template. */
+  protected File m_PomTemplate;
+
+  /** the actual POM template to use. */
+  protected transient File m_ActPomTemplate;
+
+  /** the name of the projet. */
+  protected String m_Name;
+
+  /** whether to call the "clean" goal. */
+  protected boolean m_Clean;
 
   /** the JVM options. */
   protected List<String> m_JVM;
@@ -91,6 +111,12 @@ public class Main {
   /** the main class to launch. */
   protected String m_MainClass;
 
+  /** whether to build .deb package. */
+  protected boolean m_Debian;
+
+  /** whether to build .rpm package. */
+  protected boolean m_Redhat;
+
   /** for logging. */
   protected Logger m_Logger;
 
@@ -111,6 +137,8 @@ public class Main {
     m_MavenHome            = null;
     m_MavenUserSettings    = null;
     m_ActMavenUserSettings = null;
+    m_PomTemplate          = null;
+    m_ActPomTemplate       = null;
     m_JavaHome             = null;
     m_OutputDir            = null;
     m_OutputDirMaven       = null;
@@ -121,6 +149,10 @@ public class Main {
     m_Dependencies         = null;
     m_DependencyFiles      = null;
     m_MainClass            = "adams.gui.Main";
+    m_Name                 = Template.DEFAULT_NAME;
+    m_Clean                = false;
+    m_Debian               = false;
+    m_Redhat               = false;
     m_Logger               = null;
     m_HelpRequested        = false;
   }
@@ -217,6 +249,46 @@ public class Main {
   }
 
   /**
+   * Sets the template for the POM to use.
+   *
+   * @param template	the template
+   * @return		itself
+   */
+  public Main pomTemplate(File template) {
+    m_PomTemplate = template;
+    return this;
+  }
+
+  /**
+   * Returns the template for the pom.xml to use.
+   *
+   * @return		the POM template, null if using the default
+   */
+  public File getPomTemplate() {
+    return m_PomTemplate;
+  }
+
+  /**
+   * Sets the name for the project.
+   *
+   * @param name	the name
+   * @return		itself
+   */
+  public Main name(String name) {
+    m_Name = name;
+    return this;
+  }
+
+  /**
+   * Returns the name for the project.
+   *
+   * @return		the name
+   */
+  public String getName() {
+    return m_Name;
+  }
+
+  /**
    * Sets the modules to use for bootstrapping.
    *
    * @param modules	the modules (comma-separated list)
@@ -292,6 +364,26 @@ public class Main {
    */
   public String getVersion() {
     return m_Version;
+  }
+
+  /**
+   * Sets whether to execute the "clean" goal.
+   *
+   * @param clean	true if to clean
+   * @return		itself
+   */
+  public Main clean(boolean clean) {
+    m_Clean = clean;
+    return this;
+  }
+
+  /**
+   * Returns whether to execute the "clean" goal.
+   *
+   * @return		true if to clean
+   */
+  public boolean getClean() {
+    return m_Clean;
   }
 
   /**
@@ -437,6 +529,46 @@ public class Main {
   }
 
   /**
+   * Sets whether to generate .deb package.
+   *
+   * @param debian	true if to generate .deb
+   * @return		itself
+   */
+  public Main debian(boolean debian) {
+    m_Debian = debian;
+    return this;
+  }
+
+  /**
+   * Returns whether to generate .deb package.
+   *
+   * @return		true if to generate .deb
+   */
+  public boolean getDebian() {
+    return m_Debian;
+  }
+
+  /**
+   * Sets whether to generate .rpm package.
+   *
+   * @param redhat	true if to generate .rpm
+   * @return		itself
+   */
+  public Main redhat(boolean redhat) {
+    m_Redhat = redhat;
+    return this;
+  }
+
+  /**
+   * Returns whether to generate .rpm package.
+   *
+   * @return		true if to generate .rpm
+   */
+  public boolean getRedhat() {
+    return m_Redhat;
+  }
+
+  /**
    * Configures and returns the commandline parser.
    *
    * @return		the parser
@@ -460,6 +592,16 @@ public class Main {
       .type(Type.EXISTING_DIR)
       .dest("java_home")
       .help("The Java home to use for the Maven execution.");
+    parser.addOption("-p", "--pom_template")
+      .required(false)
+      .type(Type.EXISTING_FILE)
+      .dest("pom_template")
+      .help("The alternative template for the pom.xml to use.");
+    parser.addOption("-n", "--name")
+      .required(false)
+      .setDefault(Template.DEFAULT_NAME)
+      .dest("name")
+      .help("The name to use for the project in the pom.xml");
     parser.addOption("-M", "--module")
       .required(true)
       .dest("modules")
@@ -489,6 +631,11 @@ public class Main {
       .type(Type.DIRECTORY)
       .dest("output_dir")
       .help("The directory to output the bootstrapped ADAMS application in.");
+    parser.addOption("-C", "--clean")
+      .type(Type.BOOLEAN)
+      .setDefault(false)
+      .dest("clean")
+      .help("If enabled, the 'clean' goals gets executed.");
     parser.addOption("-v", "--jvm")
       .required(false)
       .multiple(true)
@@ -499,6 +646,16 @@ public class Main {
       .setDefault("adams.gui.Main")
       .dest("main_class")
       .help("The main class to launch in the scripts.");
+    parser.addOption("--deb")
+      .type(Type.BOOLEAN)
+      .setDefault(false)
+      .dest("debian")
+      .help("If enabled, a Debian .deb package is generated. Required tools: fakeroot, dpkg-deb");
+    parser.addOption("--rpm")
+      .type(Type.BOOLEAN)
+      .setDefault(false)
+      .dest("redhat")
+      .help("If enabled, a Redhat .rpm package is generated.");
 
     return parser;
   }
@@ -514,13 +671,18 @@ public class Main {
     mavenUserSettings(ns.getFile("maven_user_settings"));
     javaHome(ns.getFile("java_home"));
     outputDir(ns.getFile("output_dir"));
+    clean(ns.getBoolean("clean"));
+    pomTemplate(ns.getFile("pom_template"));
     jvm(ns.getList("jvm"));
+    name(ns.getString("name"));
     modules(ns.getString("modules"));
     version(ns.getString("version"));
     dependencies(ns.getList("dependencies"));
     dependencyFiles(ns.getList("dependency_files"));
     sources(ns.getBoolean("sources"));
     mainClass(ns.getString("main_class"));
+    debian(ns.getBoolean("debian"));
+    redhat(ns.getBoolean("redhat"));
     return true;
   }
 
@@ -640,6 +802,31 @@ public class Main {
   }
 
   /**
+   * Initializes the pom template.
+   *
+   * @return		null if sucessful, otherwise error message
+   */
+  protected String initPomTemplate() {
+    String	path;
+
+    if (m_PomTemplate != null) {
+      m_ActPomTemplate = m_PomTemplate;
+    }
+    else {
+      try {
+	path = Files.extractTo(RESOURCES, POMTEMPLATE_FILE, System.getProperty("java.io.tmpdir"));
+	m_ActPomTemplate = new File(path);
+      }
+      catch (Exception e) {
+        getLogger().log(Level.SEVERE, "Failed to extract pom.xml template!", e);
+        return "Failed to extract pom.xml template!";
+      }
+    }
+
+    return null;
+  }
+
+  /**
    * Performs the bootstrapping.
    *
    * @return		null if successful, otherwise error message
@@ -652,6 +839,8 @@ public class Main {
       return result;
     if ((result = initDependencies()) != null)
       return result;
+    if ((result = initPomTemplate()) != null)
+      return result;
 
     main = new com.github.fracpete.bootstrapp.Main()
       .mainClass(m_MainClass)
@@ -659,13 +848,17 @@ public class Main {
       .javaHome(m_JavaHome)
       .mavenHome(getMavenHome())
       .mavenUserSettings(m_ActMavenUserSettings)
+      .name(m_Name)
       .dependencies(m_AllDependencies)
       .dependencyFiles(m_DependencyFiles)
       .outputDir(getOutputDir())
+      .clean(m_Clean)
       .springBoot(false)
       .launch(false)
       .sources(getSources())
-      .jvm(m_JVM);
+      .jvm(m_JVM)
+      .debian(m_Debian)
+      .redhat(m_Redhat);
 
     return main.execute();
   }
