@@ -101,7 +101,13 @@
     <dependency>
       <groupId>com.github.fracpete</groupId>
       <artifactId>bootstrapp</artifactId>
-      <version>0.1.0</version>
+      <version>0.1.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.github.fracpete</groupId>
+      <artifactId>simple-argparse4j</artifactId>
+      <version>0.0.8</version>
     </dependency>
   </dependencies>
 

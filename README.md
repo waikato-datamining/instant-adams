@@ -13,7 +13,8 @@ Usage: [--help] [-m MAVEN_HOME]
        [-u MAVEN_USER_SETTINGS]
        [-j JAVA_HOME] [-p POM_TEMPLATE] [-n NAME] -M MODULES -V VERSION
        [-d DEPENDENCIES...] [-D DEPENDENCY_FILES...] [-s] -o OUTPUT_DIR [-C]
-       [-v JVM...] [-c MAIN_CLASS] [--deb] [--rpm]
+       [-v JVM...] [-c MAIN_CLASS] [--deb] [--deb-snippet DEBIAN_SNIPPET] [--rpm]
+       [--rpm-snippet RPM_SNIPPET] [-l]
 
 Options:
 -m, --maven_home MAVEN_HOME
@@ -29,7 +30,7 @@ Options:
 	The alternative template for the pom.xml to use.
 
 -n, --name NAME
-	The name to use for the project in the pom.xml
+	The name to use for the project in the pom.xml. Also used as library directory and executable name when generating Debian/Redhat packages.
 
 -M, --module MODULES
 	The comma-separated list of ADAMS modules to use for the application, e.g.: adams-weka,adams-groovy,adams-excel
@@ -61,8 +62,17 @@ Options:
 --deb
 	If enabled, a Debian .deb package is generated. Required tools: fakeroot, dpkg-deb
 
+--deb-snippet DEBIAN_SNIPPET
+	The custom Maven pom.xml snippet for generating a Debian package.
+
 --rpm
 	If enabled, a Redhat .rpm package is generated.
+
+--rpm-snippet RPM_SNIPPET
+	The custom Maven pom.xml snippet for generating a Redhat package.
+
+-l, --list_modules
+	If enabled, all currently available ADAMS modules are output (all other options get ignored).
 ```
 
 
@@ -143,9 +153,14 @@ public class BootstrapTest {
 } 
 ```
 
+**Note:** The *name* is used as package name and executable for launching the
+application, in this case you will get `/usr/bin/weka`.
+
 
 ## Releases
 
+* [0.1.2](https://github.com/waikato-datamining/instant-adams/releases/download/instant-adams-0.1.2/instant-adams-0.1.2-spring-boot.jar)
+* [0.1.1](https://github.com/waikato-datamining/instant-adams/releases/download/instant-adams-0.1.1/instant-adams-0.1.1-spring-boot.jar)
 * [0.1.0](https://github.com/waikato-datamining/instant-adams/releases/download/instant-adams-0.1.0/instant-adams-0.1.0-spring-boot.jar)
 * [0.0.1](https://github.com/waikato-datamining/instant-adams/releases/download/instant-adams-0.0.1/instant-adams-0.0.1-spring-boot.jar)
 
@@ -156,6 +171,6 @@ public class BootstrapTest {
     <dependency>
       <groupId>nz.ac.waikato.cms.adams</groupId>
       <artifactId>instant-adams</artifactId>
-      <version>0.1.0</version>
+      <version>0.1.2</version>
     </dependency>
 ```

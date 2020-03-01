@@ -34,6 +34,7 @@ import org.apache.commons.lang.SystemUtils;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -47,6 +48,15 @@ public class Main {
 
   /** the URL for the ADAMS settings.xml file. */
   public final static String USER_SETTINGS_URL = "https://raw.githubusercontent.com/waikato-datamining/adams-website/master/files/resources/settings.xml";
+
+  /** the URL fort he ADAMS base pom.xml file. */
+  public final static String ADAMS_BASE_URL = "https://raw.githubusercontent.com/waikato-datamining/adams-base/master/pom.xml";
+
+  /** the URL fort he ADAMS addons pom.xml file. */
+  public final static String ADAMS_ADDONS_URL = "https://raw.githubusercontent.com/waikato-datamining/adams-addons/master/pom.xml";
+
+  /** the URL fort he ADAMS ltsw pom.xml file. */
+  public final static String ADAMS_LTS_URL = "https://raw.githubusercontent.com/waikato-datamining/adams-lts/master/pom.xml";
 
   /** the environment variable for the instant adams home directory. */
   public final static String HOME_DIR_ENV = "INSTANTADAMS_HOME";
@@ -114,8 +124,17 @@ public class Main {
   /** whether to build .deb package. */
   protected boolean m_Debian;
 
+  /** the custom debian maven snippet to use. */
+  protected File m_DebianSnippet;
+
   /** whether to build .rpm package. */
   protected boolean m_Redhat;
+
+  /** the custom redhat maven snippet to use. */
+  protected File m_RedhatSnippet;
+
+  /** whether to list modules. */
+  protected boolean m_ListModules;
 
   /** for logging. */
   protected Logger m_Logger;
@@ -152,7 +171,10 @@ public class Main {
     m_Name                 = Template.DEFAULT_NAME;
     m_Clean                = false;
     m_Debian               = false;
+    m_DebianSnippet        = null;
     m_Redhat               = false;
+    m_RedhatSnippet        = null;
+    m_ListModules          = false;
     m_Logger               = null;
     m_HelpRequested        = false;
   }
@@ -549,6 +571,26 @@ public class Main {
   }
 
   /**
+   * Sets the file containing the custom maven snippet file for generating the debian package.
+   *
+   * @param snippet	the file
+   * @return		itself
+   */
+  public Main debianSnippet(File snippet) {
+    m_DebianSnippet = snippet;
+    return this;
+  }
+
+  /**
+   * Returns the file containing the custom maven snippet file for generating the debian package.
+   *
+   * @return		the file
+   */
+  public File getDebianSnippet() {
+    return m_DebianSnippet;
+  }
+
+  /**
    * Sets whether to generate .rpm package.
    *
    * @param redhat	true if to generate .rpm
@@ -566,6 +608,46 @@ public class Main {
    */
   public boolean getRedhat() {
     return m_Redhat;
+  }
+
+  /**
+   * Sets the file containing the custom maven snippet file for generating the redhat package.
+   *
+   * @param snippet	the file
+   * @return		itself
+   */
+  public Main redhatSnippet(File snippet) {
+    m_RedhatSnippet = snippet;
+    return this;
+  }
+
+  /**
+   * Returns the file containing the custom maven snippet file for generating the redhat package.
+   *
+   * @return		the file
+   */
+  public File getRedhatSnippet() {
+    return m_RedhatSnippet;
+  }
+
+  /**
+   * Sets whether to list modules.
+   *
+   * @param listModules	true if to list modules
+   * @return		itself
+   */
+  public Main listModules(boolean listModules) {
+    m_ListModules = listModules;
+    return this;
+  }
+
+  /**
+   * Returns whether to list modules.
+   *
+   * @return		true if to list modules
+   */
+  public boolean getListModules() {
+    return m_ListModules;
   }
 
   /**
@@ -599,9 +681,9 @@ public class Main {
       .help("The alternative template for the pom.xml to use.");
     parser.addOption("-n", "--name")
       .required(false)
-      .setDefault(Template.DEFAULT_NAME)
+      .setDefault("adams")
       .dest("name")
-      .help("The name to use for the project in the pom.xml");
+      .help("The name to use for the project in the pom.xml. Also used as library directory and executable name when generating Debian/Redhat packages.");
     parser.addOption("-M", "--module")
       .required(true)
       .dest("modules")
@@ -651,11 +733,26 @@ public class Main {
       .setDefault(false)
       .dest("debian")
       .help("If enabled, a Debian .deb package is generated. Required tools: fakeroot, dpkg-deb");
+    parser.addOption("--deb-snippet")
+      .type(Type.EXISTING_FILE)
+      .required(false)
+      .dest("debian_snippet")
+      .help("The custom Maven pom.xml snippet for generating a Debian package.");
     parser.addOption("--rpm")
       .type(Type.BOOLEAN)
       .setDefault(false)
       .dest("redhat")
       .help("If enabled, a Redhat .rpm package is generated.");
+    parser.addOption("--rpm-snippet")
+      .type(Type.EXISTING_FILE)
+      .required(false)
+      .dest("rpm_snippet")
+      .help("The custom Maven pom.xml snippet for generating a Redhat package.");
+    parser.addOption("-l", "--list_modules")
+      .type(Type.BOOLEAN)
+      .setDefault(false)
+      .dest("list_modules")
+      .help("If enabled, all currently available ADAMS modules are output (all other options get ignored).");
 
     return parser;
   }
@@ -682,7 +779,10 @@ public class Main {
     sources(ns.getBoolean("sources"));
     mainClass(ns.getString("main_class"));
     debian(ns.getBoolean("debian"));
+    debianSnippet(ns.getFile("debian_snippet"));
     redhat(ns.getBoolean("redhat"));
+    redhatSnippet(ns.getFile("redhat_snippet"));
+    listModules(ns.getBoolean("list_modules"));
     return true;
   }
 
@@ -702,13 +802,24 @@ public class Main {
    * @return		true if successfully set (or help requested)
    */
   public boolean setOptions(String[] options) {
+    return setOptions(options, false);
+  }
+
+  /**
+   * Parses the options and configures the object.
+   *
+   * @param options	the command-line options
+   * @param noErrors 	whether to suppress exceptions
+   * @return		true if successfully set (or help requested)
+   */
+  public boolean setOptions(String[] options, boolean noErrors) {
     ArgumentParser 	parser;
     Namespace 		ns;
 
     m_HelpRequested = false;
     parser          = getParser();
     try {
-      ns = parser.parseArgs(options);
+      ns = parser.parseArgs(options, false, noErrors);
     }
     catch (ArgumentParserException e) {
       parser.handleError(e);
@@ -827,6 +938,96 @@ public class Main {
   }
 
   /**
+   * Extracts the modules from the pom xml string.
+   *
+   * @param pom		the pom.xml string to parse
+   * @return		the modules that were found
+   */
+  protected List<String> extractModules(String pom) {
+    List<String>	result;
+    String[]		lines;
+
+    result = new ArrayList<>();
+    lines  = pom.split("\n");
+    for (String line: lines) {
+      if (line.contains("<module>")) {
+        line = line.substring(line.indexOf('>') + 1);
+        line = line.substring(0, line.indexOf('<'));
+        if (!line.contains("$"))
+	  result.add(line);
+      }
+    }
+
+    Collections.sort(result);
+
+    return result;
+  }
+
+  /**
+   * Outputs the ADAMS modules in the console.
+   *
+   * @param url 	the URL to grab
+   * @param title 	the title to use in the console
+   * @return		null if successful, otherwise error message
+   */
+  protected String outputModules(String url, String title) {
+    BasicResponse	r;
+    List<String>	modules;
+    int			i;
+
+    try {
+      r = Requests.get(url)
+	.allowRedirects(true)
+	.execute();
+      if (r.ok()) {
+        modules = extractModules(r.text());
+        if (modules.size() == 0) {
+          return "Failed to extract any modules from: " + ADAMS_BASE_URL;
+	}
+	else {
+          System.out.println("\n" + title + ":");
+          for (i = 0; i < modules.size(); i++) {
+            if (i > 0)
+              System.out.print(", ");
+            System.out.print(modules.get(i));
+	  }
+	  System.out.println();
+	}
+      }
+      else {
+        return "Failed to load URL (status: " + r.statusCode() + ": " + r.statusMessage() + "): " + url;
+      }
+    }
+    catch (Exception e) {
+      getLogger().log(Level.SEVERE, "Failed to extract modules from: " + url, e);
+    }
+
+    return null;
+  }
+
+  /**
+   * Outputs all available ADAMS modules in the console.
+   *
+   * @return		null if successful, otherwise error message
+   */
+  public String outputModules() {
+    String		result;
+
+    System.out.println("\nAvailable modules:");
+
+    if ((result = outputModules(ADAMS_BASE_URL, "adams-base")) != null)
+      return result;
+    if ((result = outputModules(ADAMS_ADDONS_URL, "adams-addons")) != null)
+      return result;
+    if ((result = outputModules(ADAMS_LTS_URL, "adams-lts")) != null)
+      return result;
+
+    System.out.println("\nNote:\nLTS and non-LTS modules (e.g., 'adams-weka-lts' and 'adams-weka') cannot be mixed.");
+
+    return null;
+  }
+
+  /**
    * Performs the bootstrapping.
    *
    * @return		null if successful, otherwise error message
@@ -834,6 +1035,9 @@ public class Main {
   protected String doExecute() {
     String				result;
     com.github.fracpete.bootstrapp.Main	main;
+
+    if (m_ListModules)
+      return outputModules();
 
     if ((result = initMavenUserSettings()) != null)
       return result;
@@ -858,7 +1062,9 @@ public class Main {
       .sources(getSources())
       .jvm(m_JVM)
       .debian(m_Debian)
-      .redhat(m_Redhat);
+      .debianSnippet(m_DebianSnippet)
+      .redhat(m_Redhat)
+      .redhatSnippet(m_RedhatSnippet);
 
     return main.execute();
   }
@@ -885,6 +1091,13 @@ public class Main {
    */
   public static void main(String[] args) {
     Main main = new Main();
+
+    // modules listed?
+    main.setOptions(args, true);
+    if (main.getListModules()) {
+      main.outputModules();
+      System.exit(0);
+    }
 
     if (!main.setOptions(args)) {
       System.err.println("Failed to parse options!");
