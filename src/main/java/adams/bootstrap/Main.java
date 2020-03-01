@@ -841,11 +841,11 @@ public class Main {
 
     m_AllDependencies = new ArrayList<>();
     if (m_Modules.contains(",")) {
-      for (String module : m_Modules.replace(" ", "").split(","))
-	m_AllDependencies.add("nz.ac.waikato.cms.adams:" + module + ":" + m_Version);
+      for (String module : m_Modules.split(","))
+	m_AllDependencies.add("nz.ac.waikato.cms.adams:" + module.trim() + ":" + m_Version);
     }
     else {
-      m_AllDependencies.add("nz.ac.waikato.cms.adams:" + m_Modules + ":" + m_Version);
+      m_AllDependencies.add("nz.ac.waikato.cms.adams:" + m_Modules.trim() + ":" + m_Version);
     }
 
     if (m_Dependencies != null)
