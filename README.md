@@ -1,5 +1,6 @@
 # instant-adams
 Boostrapping ADAMS applications simply from list of modules, without compilation.
+Additional jars (binary and sources) can be injected into the process as well.
 You can either generate cross-platform applications, by using shell scripts for 
 Linux/Mac and batch files for Windows, or Linux packages for Debian (`.deb`) 
 and/or Redhat (`.rpm`).
