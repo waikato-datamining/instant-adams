@@ -106,8 +106,14 @@ public class Main {
   /** the version to use. */
   protected String m_Version;
 
+  /** the external jar files/dirs. */
+  protected List<File> m_ExternalJars;
+
   /** whether to retrieve source jars or not. */
   protected boolean m_Sources;
+
+  /** the external source jar files/dirs. */
+  protected List<File> m_ExternalSources;
 
   /** the dependencies. */
   protected List<String> m_Dependencies;
@@ -163,7 +169,9 @@ public class Main {
     m_OutputDirMaven       = null;
     m_JVM                  = null;
     m_Modules              = null;
+    m_ExternalJars         = null;
     m_Sources              = false;
+    m_ExternalSources      = null;
     m_AllDependencies      = null;
     m_Dependencies         = null;
     m_DependencyFiles      = null;
@@ -386,6 +394,74 @@ public class Main {
    */
   public String getVersion() {
     return m_Version;
+  }
+
+  /**
+   * Sets the external jar files/dirs to use.
+   *
+   * @param external	the files/dirs, null to unset
+   * @return		itself
+   */
+  public Main externalJars(List<File> external) {
+    m_ExternalJars = external;
+    return this;
+  }
+
+  /**
+   * Sets the external jar files/dirs to use.
+   *
+   * @param external	the files/dirs, null to unset
+   * @return		itself
+   */
+  public Main externalJars(File... external) {
+    if (external == null)
+      m_ExternalJars = null;
+    else
+      externalJars(Arrays.asList(external));
+    return this;
+  }
+
+  /**
+   * Returns the currently set external jar files/dirs.
+   *
+   * @return		the files/dirs, null if none set
+   */
+  public List<File> getExternalJars() {
+    return m_ExternalJars;
+  }
+
+  /**
+   * Sets the external source files/dirs to use.
+   *
+   * @param external	the files/dirs, null to unset
+   * @return		itself
+   */
+  public Main externalSources(List<File> external) {
+    m_ExternalSources = external;
+    return this;
+  }
+
+  /**
+   * Sets the external source files/dirs to use.
+   *
+   * @param external	the files/dirs, null to unset
+   * @return		itself
+   */
+  public Main externalSources(File... external) {
+    if (external == null)
+      m_ExternalSources = null;
+    else
+      externalSources(Arrays.asList(external));
+    return this;
+  }
+
+  /**
+   * Returns the currently set external source files/dirs.
+   *
+   * @return		the files/dirs, null if none set
+   */
+  public List<File> getExternalSources() {
+    return m_ExternalSources;
   }
 
   /**
@@ -663,21 +739,25 @@ public class Main {
       .required(false)
       .type(Type.EXISTING_DIR)
       .dest("maven_home")
+      .metaVar("DIR")
       .help("The directory with a local Maven installation to use instead of the bundled one.");
     parser.addOption("-u", "--maven_user_settings")
       .required(false)
       .type(Type.EXISTING_FILE)
       .dest("maven_user_settings")
+      .metaVar("FILE")
       .help("The file with the maven user settings to use other than $HOME/.m2/settings.xml.");
     parser.addOption("-j", "--java_home")
       .required(false)
       .type(Type.EXISTING_DIR)
       .dest("java_home")
+      .metaVar("DIR")
       .help("The Java home to use for the Maven execution.");
     parser.addOption("-p", "--pom_template")
       .required(false)
       .type(Type.EXISTING_FILE)
       .dest("pom_template")
+      .metaVar("FILE")
       .help("The alternative template for the pom.xml to use.");
     parser.addOption("-n", "--name")
       .required(false)
@@ -696,22 +776,39 @@ public class Main {
       .required(false)
       .multiple(true)
       .dest("dependencies")
+      .metaVar("DEPENDENCY")
       .help("The additional maven dependencies to use for bootstrapping ADAMS (group:artifact:version), e.g.: nz.ac.waikato.cms.weka:kfGroovy:1.0.12");
     parser.addOption("-D", "--dependency-file")
       .required(false)
       .multiple(true)
       .type(Type.EXISTING_FILE)
       .dest("dependency_files")
+      .metaVar("FILE")
       .help("The file(s) with additional maven dependencies to use for bootstrapping ADAMS (group:artifact:version), one dependency per line.");
+    parser.addOption("-J", "--external-jar")
+      .required(false)
+      .multiple(true)
+      .type(Type.EXISTING_FILE_OR_DIRECTORY)
+      .dest("external_jars")
+      .metaVar("JAR_OR_DIR")
+      .help("The external jar or directory with jar files to also include in the application.");
     parser.addOption("-s", "--sources")
       .type(Type.BOOLEAN)
       .setDefault(false)
       .dest("sources")
       .help("If enabled, source jars of all the Maven artifacts will get downloaded as well and stored in a separated directory.");
+    parser.addOption("-S", "--external-source")
+      .required(false)
+      .multiple(true)
+      .type(Type.EXISTING_FILE_OR_DIRECTORY)
+      .dest("external_sources")
+      .metaVar("JAR_OR_DIR")
+      .help("The external source jar or directory with source jar files to also include in the application.");
     parser.addOption("-o", "--output_dir")
       .required(true)
       .type(Type.DIRECTORY)
       .dest("output_dir")
+      .metaVar("DIR")
       .help("The directory to output the bootstrapped ADAMS application in.");
     parser.addOption("-C", "--clean")
       .type(Type.BOOLEAN)
@@ -727,6 +824,7 @@ public class Main {
       .required(false)
       .setDefault("adams.gui.Main")
       .dest("main_class")
+      .metaVar("CLASSNAME")
       .help("The main class to launch in the scripts.");
     parser.addOption("--deb")
       .type(Type.BOOLEAN)
@@ -737,6 +835,7 @@ public class Main {
       .type(Type.EXISTING_FILE)
       .required(false)
       .dest("debian_snippet")
+      .metaVar("FILE")
       .help("The custom Maven pom.xml snippet for generating a Debian package.");
     parser.addOption("--rpm")
       .type(Type.BOOLEAN)
@@ -747,6 +846,7 @@ public class Main {
       .type(Type.EXISTING_FILE)
       .required(false)
       .dest("rpm_snippet")
+      .metaVar("FILE")
       .help("The custom Maven pom.xml snippet for generating a Redhat package.");
     parser.addOption("-l", "--list_modules")
       .type(Type.BOOLEAN)
@@ -776,7 +876,9 @@ public class Main {
     version(ns.getString("version"));
     dependencies(ns.getList("dependencies"));
     dependencyFiles(ns.getList("dependency_files"));
+    externalJars(ns.getList("external_jars"));
     sources(ns.getBoolean("sources"));
+    externalSources(ns.getList("external_sources"));
     mainClass(ns.getString("main_class"));
     debian(ns.getBoolean("debian"));
     debianSnippet(ns.getFile("debian_snippet"));
@@ -1055,11 +1157,13 @@ public class Main {
       .name(m_Name)
       .dependencies(m_AllDependencies)
       .dependencyFiles(m_DependencyFiles)
+      .externalJars(m_ExternalJars)
       .outputDir(getOutputDir())
       .clean(m_Clean)
       .springBoot(false)
       .launch(false)
       .sources(getSources())
+      .externalSources(m_ExternalSources)
       .jvm(m_JVM)
       .debian(m_Debian)
       .debianSnippet(m_DebianSnippet)
