@@ -10,70 +10,88 @@ and/or Redhat (`.rpm`).
 ```commandline
 Allows bootstrapping of ADAMS applications by simply supplying the modules.
 
-Usage: [--help] [-m MAVEN_HOME]
-       [-u MAVEN_USER_SETTINGS]
-       [-j JAVA_HOME] [-p POM_TEMPLATE] [-n NAME] -M MODULES -V VERSION
-       [-d DEPENDENCIES...] [-D DEPENDENCY_FILES...] [-s] -o OUTPUT_DIR [-C]
-       [-v JVM...] [-c MAIN_CLASS] [--deb] [--deb-snippet DEBIAN_SNIPPET] [--rpm]
-       [--rpm-snippet RPM_SNIPPET] [-l]
+
+Usage: [--help] [-m DIR] [-u FILE] [-j DIR] [-p FILE] [-n NAME]
+       -M MODULES -V VERSION [-d DEPENDENCY...] [-D FILE...]
+       [-J JAR_OR_DIR...] [-s] [-S JAR_OR_DIR...] -o DIR [-C]
+       [-v JVM...] [-c CLASSNAME] [--deb] [--deb-snippet FILE] [--rpm]
+       [--rpm-snippet FILE] [-l]
 
 Options:
--m, --maven_home MAVEN_HOME
-	The directory with a local Maven installation to use instead of the bundled one.
+-m, --maven_home DIR
+	The directory with a local Maven installation to use instead of the
+	bundled one.
 
--u, --maven_user_settings MAVEN_USER_SETTINGS
-	The file with the maven user settings to use other than $HOME/.m2/settings.xml.
+-u, --maven_user_settings FILE
+	The file with the maven user settings to use other than
+	$HOME/.m2/settings.xml.
 
--j, --java_home JAVA_HOME
+-j, --java_home DIR
 	The Java home to use for the Maven execution.
 
--p, --pom_template POM_TEMPLATE
+-p, --pom_template FILE
 	The alternative template for the pom.xml to use.
 
 -n, --name NAME
-	The name to use for the project in the pom.xml. Also used as library directory and executable name when generating Debian/Redhat packages.
+	The name to use for the project in the pom.xml. Also used as library
+	directory and executable name when generating Debian/Redhat packages.
 
 -M, --module MODULES
-	The comma-separated list of ADAMS modules to use for the application, e.g.: adams-weka,adams-groovy,adams-excel
+	The comma-separated list of ADAMS modules to use for the application,
+	e.g.: adams-weka,adams-groovy,adams-excel
 
 -V, --version VERSION
 	The version of ADAMS to use, e.g., '20.1.1' or '20.2.0-SNAPSHOT'.
 
--d, --dependency DEPENDENCIES
-	The additional maven dependencies to use for bootstrapping ADAMS (group:artifact:version), e.g.: nz.ac.waikato.cms.weka:kfGroovy:1.0.12
+-d, --dependency DEPENDENCY
+	The additional maven dependencies to use for bootstrapping ADAMS
+	(group:artifact:version), e.g.: nz.ac.waikato.cms.weka:kfGroovy:1.0.12
 
--D, --dependency-file DEPENDENCY_FILES
-	The file(s) with additional maven dependencies to use for bootstrapping ADAMS (group:artifact:version), one dependency per line.
+-D, --dependency-file FILE
+	The file(s) with additional maven dependencies to use for bootstrapping
+	ADAMS (group:artifact:version), one dependency per line.
+
+-J, --external-jar JAR_OR_DIR
+	The external jar or directory with jar files to also include in the
+	application.
 
 -s, --sources
-	If enabled, source jars of all the Maven artifacts will get downloaded as well and stored in a separated directory.
+	If enabled, source jars of all the Maven artifacts will get downloaded
+	as well and stored in a separated directory.
 
--o, --output_dir OUTPUT_DIR
+-S, --external-source JAR_OR_DIR
+	The external source jar or directory with source jar files to also
+	include in the application.
+
+-o, --output_dir DIR
 	The directory to output the bootstrapped ADAMS application in.
 
 -C, --clean
 	If enabled, the 'clean' goals gets executed.
 
 -v, --jvm JVM
-	The parameters to pass to the JVM before launching the application in the scripts.
+	The parameters to pass to the JVM before launching the application in
+	the scripts.
 
--c, --main_class MAIN_CLASS
+-c, --main_class CLASSNAME
 	The main class to launch in the scripts.
 
 --deb
-	If enabled, a Debian .deb package is generated. Required tools: fakeroot, dpkg-deb
+	If enabled, a Debian .deb package is generated. Required tools: fakeroot,
+	dpkg-deb
 
---deb-snippet DEBIAN_SNIPPET
+--deb-snippet FILE
 	The custom Maven pom.xml snippet for generating a Debian package.
 
 --rpm
 	If enabled, a Redhat .rpm package is generated.
 
---rpm-snippet RPM_SNIPPET
+--rpm-snippet FILE
 	The custom Maven pom.xml snippet for generating a Redhat package.
 
 -l, --list_modules
-	If enabled, all currently available ADAMS modules are output (all other options get ignored).
+	If enabled, all currently available ADAMS modules are output (all other
+	options get ignored).
 ```
 
 
@@ -85,7 +103,7 @@ The following examples bootstrap an ADAMS application with support for
 Weka, Groovy and Excel:
  
 ```
-java -jar instant-adams-0.1.1-spring-boot.jar \
+java -jar instant-adams-0.1.2-spring-boot.jar \
   -C \
   -M adams-weka,adams-groovy,adams-excel \
   -V 20.2.0-SNAPSHOT \
@@ -120,7 +138,7 @@ public class BootstrapTest {
 The same, but compiled as Debian (.deb) package:
  
 ```
-java -jar instant-adams-0.1.1-spring-boot.jar \
+java -jar instant-adams-0.1.2-spring-boot.jar \
   -C \
   -M adams-weka,adams-groovy,adams-excel \
   -n adams-test \
@@ -160,6 +178,7 @@ application, in this case you will get `/usr/bin/weka`.
 
 ## Releases
 
+* [0.1.2](https://github.com/waikato-datamining/instant-adams/releases/download/instant-adams-0.1.2/instant-adams-0.1.2-spring-boot.jar)
 * [0.1.1](https://github.com/waikato-datamining/instant-adams/releases/download/instant-adams-0.1.1/instant-adams-0.1.1-spring-boot.jar)
 * [0.1.0](https://github.com/waikato-datamining/instant-adams/releases/download/instant-adams-0.1.0/instant-adams-0.1.0-spring-boot.jar)
 * [0.0.1](https://github.com/waikato-datamining/instant-adams/releases/download/instant-adams-0.0.1/instant-adams-0.0.1-spring-boot.jar)
@@ -171,6 +190,6 @@ application, in this case you will get `/usr/bin/weka`.
     <dependency>
       <groupId>nz.ac.waikato.cms.adams</groupId>
       <artifactId>instant-adams</artifactId>
-      <version>0.1.1</version>
+      <version>0.1.2</version>
     </dependency>
 ```
