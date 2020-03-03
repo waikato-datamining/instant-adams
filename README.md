@@ -99,14 +99,14 @@ Options:
 
 ## Cross-platform
 
-The following examples bootstrap an ADAMS application with support for
-Weka, Groovy and Excel:
+The following examples bootstrap an ADAMS application (from the 20.1.1 release) 
+with support for Weka, Groovy and Excel:
  
 ```
-java -jar instant-adams-0.1.2-spring-boot.jar \
+java -jar instant-adams-0.1.3-spring-boot.jar \
   -C \
   -M adams-weka,adams-groovy,adams-excel \
-  -V 20.2.0-SNAPSHOT \
+  -V 20.1.1 \
   -o ./out \
   -v -Xmx1g
 ```
@@ -123,7 +123,7 @@ public class BootstrapTest {
     Main main = new Main()
       .clean(true)
       .modules("adams-weka,adams-groovy,adams-excel")
-      .version("20.2.0-SNAPSHOT")
+      .version("20.1.1")
       .outputDir(new File("./out"))
       .jvm("-Xmx1g");
     String result = main.execute();
@@ -138,11 +138,11 @@ public class BootstrapTest {
 The same, but compiled as Debian (.deb) package:
  
 ```
-java -jar instant-adams-0.1.2-spring-boot.jar \
+java -jar instant-adams-0.1.3-spring-boot.jar \
   -C \
   -M adams-weka,adams-groovy,adams-excel \
   -n adams-test \
-  -V 20.2.0-SNAPSHOT \
+  -V 20.1.1 \
   -o ./out \
   -v -Xmx1g \
   --deb
@@ -161,7 +161,7 @@ public class BootstrapTest {
       .clean(true)
       .modules("adams-weka,adams-groovy,adams-excel")
       .name("adams-test")
-      .version("20.2.0-SNAPSHOT")
+      .version("20.1.1")
       .outputDir(new File("./out"))
       .jvm("-Xmx1g")
       .debian(true);
@@ -178,6 +178,7 @@ application, in this case you will get `/usr/bin/weka`.
 
 ## Releases
 
+* [0.1.3](https://github.com/waikato-datamining/instant-adams/releases/download/instant-adams-0.1.3/instant-adams-0.1.3-spring-boot.jar)
 * [0.1.2](https://github.com/waikato-datamining/instant-adams/releases/download/instant-adams-0.1.2/instant-adams-0.1.2-spring-boot.jar)
 * [0.1.1](https://github.com/waikato-datamining/instant-adams/releases/download/instant-adams-0.1.1/instant-adams-0.1.1-spring-boot.jar)
 * [0.1.0](https://github.com/waikato-datamining/instant-adams/releases/download/instant-adams-0.1.0/instant-adams-0.1.0-spring-boot.jar)
@@ -190,6 +191,6 @@ application, in this case you will get `/usr/bin/weka`.
     <dependency>
       <groupId>nz.ac.waikato.cms.adams</groupId>
       <artifactId>instant-adams</artifactId>
-      <version>0.1.2</version>
+      <version>0.1.3</version>
     </dependency>
 ```
