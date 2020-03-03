@@ -49,14 +49,17 @@ public class Main {
   /** the URL for the ADAMS settings.xml file. */
   public final static String USER_SETTINGS_URL = "https://raw.githubusercontent.com/waikato-datamining/adams-website/master/files/resources/settings.xml";
 
-  /** the URL fort he ADAMS base pom.xml file. */
+  /** the URL for the ADAMS base pom.xml file. */
   public final static String ADAMS_BASE_URL = "https://raw.githubusercontent.com/waikato-datamining/adams-base/master/pom.xml";
 
-  /** the URL fort he ADAMS addons pom.xml file. */
+  /** the URL for the ADAMS addons pom.xml file. */
   public final static String ADAMS_ADDONS_URL = "https://raw.githubusercontent.com/waikato-datamining/adams-addons/master/pom.xml";
 
-  /** the URL fort he ADAMS ltsw pom.xml file. */
+  /** the URL for the ADAMS lts pom.xml file. */
   public final static String ADAMS_LTS_URL = "https://raw.githubusercontent.com/waikato-datamining/adams-lts/master/pom.xml";
+
+  /** the URL for the ADAMS spectral base pom.xml file. */
+  public final static String ADAMS_SPECTRAL_BASE_URL = "https://raw.githubusercontent.com/waikato-datamining/adams-spectral-base/master/pom.xml";
 
   /** the environment variable for the instant adams home directory. */
   public final static String HOME_DIR_ENV = "INSTANTADAMS_HOME";
@@ -1122,6 +1125,8 @@ public class Main {
     if ((result = outputModules(ADAMS_ADDONS_URL, "adams-addons")) != null)
       return result;
     if ((result = outputModules(ADAMS_LTS_URL, "adams-lts")) != null)
+      return result;
+    if ((result = outputModules(ADAMS_SPECTRAL_BASE_URL, "adams-spectral-base")) != null)
       return result;
 
     System.out.println("\nNote:\nLTS and non-LTS modules (e.g., 'adams-weka-lts' and 'adams-weka') cannot be mixed.");
