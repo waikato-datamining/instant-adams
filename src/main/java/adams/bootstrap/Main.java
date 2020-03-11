@@ -35,7 +35,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -322,12 +324,53 @@ public class Main {
   }
 
   /**
+   * Quick check whether there are conflicting LTS and non-LTS modules in the
+   * list of modules.
+   *
+   * @param modules	the modules to check
+   * @return		null if valid, otherwise error message
+   */
+  protected String checkModules(String[] modules) {
+    Set<String>		set;
+    StringBuilder	result;
+
+    result = new StringBuilder();
+
+    set    = new HashSet<>();
+    for (String module: modules) {
+      if (module.endsWith("-lts"))
+        set.add(module.replaceAll("-lts$", ""));
+    }
+
+    for (String module: modules) {
+      module = module.trim();
+      if (module.endsWith("-lts"))
+	continue;
+      if (set.contains(module)) {
+        if (result.length() > 0)
+          result.append(", ");
+        result.append(module);
+      }
+    }
+
+    if (result.length() == 0)
+      return null;
+    else
+      return "Following modules are present as LTS and non-LTS version: " + result.toString();
+  }
+
+  /**
    * Sets the modules to use for bootstrapping.
    *
    * @param modules	the modules (comma-separated list)
    * @return		itself
    */
   public Main modules(String modules) {
+    String	msg;
+
+    if ((msg = checkModules(modules.split(","))) != null)
+      throw new IllegalArgumentException(msg);
+
     m_Modules = modules;
     return this;
   }
@@ -340,8 +383,12 @@ public class Main {
    */
   public Main modules(String... modules) {
     StringBuilder	all;
+    String	msg;
 
     if (modules != null) {
+      if ((msg = checkModules(modules)) != null)
+	throw new IllegalArgumentException(msg);
+
       all = new StringBuilder();
       for (String module : modules) {
 	if (all.length() > 0)
