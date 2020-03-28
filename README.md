@@ -104,7 +104,7 @@ The following examples bootstrap an ADAMS application (from the 20.1.1 release)
 with support for Weka, Groovy and Excel:
  
 ```
-java -jar instant-adams-0.1.3-spring-boot.jar \
+java -jar instant-adams-0.1.4-spring-boot.jar \
   -C \
   -M adams-weka,adams-groovy,adams-excel \
   -V 20.1.1 \
@@ -139,7 +139,7 @@ public class BootstrapTest {
 The same, but compiled as Debian (.deb) package:
  
 ```
-java -jar instant-adams-0.1.3-spring-boot.jar \
+java -jar instant-adams-0.1.4-spring-boot.jar \
   -C \
   -M adams-weka,adams-groovy,adams-excel \
   -n adams-test \
@@ -179,6 +179,7 @@ application, in this case you will get `/usr/bin/weka`.
 
 ## Releases
 
+* [0.1.4](https://github.com/waikato-datamining/instant-adams/releases/download/instant-adams-0.1.4/instant-adams-0.1.4-spring-boot.jar)
 * [0.1.3](https://github.com/waikato-datamining/instant-adams/releases/download/instant-adams-0.1.3/instant-adams-0.1.3-spring-boot.jar)
 * [0.1.2](https://github.com/waikato-datamining/instant-adams/releases/download/instant-adams-0.1.2/instant-adams-0.1.2-spring-boot.jar)
 * [0.1.1](https://github.com/waikato-datamining/instant-adams/releases/download/instant-adams-0.1.1/instant-adams-0.1.1-spring-boot.jar)
@@ -192,6 +193,6 @@ application, in this case you will get `/usr/bin/weka`.
     <dependency>
       <groupId>nz.ac.waikato.cms.adams</groupId>
       <artifactId>instant-adams</artifactId>
-      <version>0.1.3</version>
+      <version>0.1.4</version>
     </dependency>
 ```
