@@ -72,6 +72,8 @@ public class Main {
   /** the bundled pom template. */
   public final static String POMTEMPLATE_FILE = "instant-adams.xml";
 
+  public static final String LATEST = "LATEST";
+
   /** the alternative maven installation. */
   protected File m_MavenHome;
 
@@ -110,6 +112,9 @@ public class Main {
 
   /** the version to use. */
   protected String m_Version;
+
+  /** the actual version. */
+  protected transient String m_ActualVersion;
 
   /** the external jar files/dirs. */
   protected List<File> m_ExternalJars;
@@ -190,6 +195,7 @@ public class Main {
     m_ListModules          = false;
     m_Logger               = null;
     m_HelpRequested        = false;
+    m_ActualVersion        = null;
   }
 
   /**
@@ -433,7 +439,8 @@ public class Main {
    * @return		itself
    */
   public Main version(String version) {
-    m_Version = version;
+    m_Version       = version;
+    m_ActualVersion = null;
     return this;
   }
 
@@ -821,7 +828,7 @@ public class Main {
     parser.addOption("-V", "--version")
       .required(true)
       .dest("version")
-      .help("The version of ADAMS to use, e.g., '20.1.1' or '20.2.0-SNAPSHOT'.");
+      .help("The version of ADAMS to use, e.g., '20.1.1' or '20.2.0-SNAPSHOT'.\nUse '" + LATEST + "' to use the latest snapshot version available.");
     parser.addOption("-d", "--dependency")
       .required(false)
       .multiple(true)
@@ -983,21 +990,70 @@ public class Main {
   }
 
   /**
+   * Determines the actual version to use, ie resolves LATEST to the latest
+   * from the pom.xml.
+   *
+   * @return		the actual version
+   */
+  protected String initVersion() {
+    BasicResponse	r;
+    String[]		lines;
+
+    if (m_ActualVersion == null) {
+      if (m_Version.equals(LATEST)) {
+        try {
+	  r = Requests.get(ADAMS_BASE_URL)
+	    .allowRedirects(true)
+	    .execute();
+	  if (r.ok()) {
+	    lines  = r.text().split("\n");
+	    for (String line: lines) {
+	      if (line.contains("<version>")) {
+		line = line.substring(line.indexOf('>') + 1);
+		line = line.substring(0, line.indexOf('<'));
+		m_ActualVersion = line;
+		getLogger().info("LATEST version resolves to: " + m_ActualVersion);
+		break;
+	      }
+	    }
+	  }
+	  else {
+	    return "Failed to load URL (status: " + r.statusCode() + ": " + r.statusMessage() + "): " + ADAMS_BASE_URL;
+	  }
+	}
+	catch (Exception e) {
+	  getLogger().log(Level.SEVERE, "Failed to extract version from: " + ADAMS_BASE_URL, e);
+          return "Failed to extract version from: " + ADAMS_BASE_URL;
+	}
+      }
+      else {
+        m_ActualVersion = m_Version;
+      }
+    }
+    return null;
+  }
+
+  /**
    * Initializes the dependencies.
    *
    * @return		the dependencies
    */
   protected String initDependencies() {
+    String	result;
+
     if (m_Modules.trim().isEmpty())
       return "No modules provided!";
+
+    if ((result = initVersion()) != null)
+      return result;
 
     m_AllDependencies = new ArrayList<>();
     if (m_Modules.contains(",")) {
       for (String module : m_Modules.split(","))
-	m_AllDependencies.add("nz.ac.waikato.cms.adams:" + module.trim() + ":" + m_Version);
+	m_AllDependencies.add("nz.ac.waikato.cms.adams:" + module.trim() + ":" + m_ActualVersion);
     }
     else {
-      m_AllDependencies.add("nz.ac.waikato.cms.adams:" + m_Modules.trim() + ":" + m_Version);
+      m_AllDependencies.add("nz.ac.waikato.cms.adams:" + m_Modules.trim() + ":" + m_ActualVersion);
     }
 
     if (m_Dependencies != null)

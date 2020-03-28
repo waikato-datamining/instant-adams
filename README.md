@@ -42,6 +42,7 @@ Options:
 
 -V, --version VERSION
 	The version of ADAMS to use, e.g., '20.1.1' or '20.2.0-SNAPSHOT'.
+	Use 'LATEST' to use the latest snapshot version available.
 
 -d, --dependency DEPENDENCY
 	The additional maven dependencies to use for bootstrapping ADAMS
