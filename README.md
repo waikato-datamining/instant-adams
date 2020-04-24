@@ -179,6 +179,7 @@ application, in this case you will get `/usr/bin/weka`.
 
 ## Releases
 
+* [0.1.5](https://github.com/waikato-datamining/instant-adams/releases/download/instant-adams-0.1.5/instant-adams-0.1.5-spring-boot.jar)
 * [0.1.4](https://github.com/waikato-datamining/instant-adams/releases/download/instant-adams-0.1.4/instant-adams-0.1.4-spring-boot.jar)
 * [0.1.3](https://github.com/waikato-datamining/instant-adams/releases/download/instant-adams-0.1.3/instant-adams-0.1.3-spring-boot.jar)
 * [0.1.2](https://github.com/waikato-datamining/instant-adams/releases/download/instant-adams-0.1.2/instant-adams-0.1.2-spring-boot.jar)
@@ -193,6 +194,6 @@ application, in this case you will get `/usr/bin/weka`.
     <dependency>
       <groupId>nz.ac.waikato.cms.adams</groupId>
       <artifactId>instant-adams</artifactId>
-      <version>0.1.4</version>
+      <version>0.1.5</version>
     </dependency>
 ```
