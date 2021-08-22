@@ -83,8 +83,8 @@
   </properties>
 
   <scm>
-    <connection>scm:git:https://github.com/waikato-datamining/instant-adams</connection>
-    <developerConnection>scm:git:https://github.com/waikato-datamining/instant-adams</developerConnection>
+    <connection>scm:git:ssh://git@github.com/waikato-datamining/instant-adams</connection>
+    <developerConnection>scm:git:ssh://git@github.com/waikato-datamining/instant-adams</developerConnection>
     <url>https://github.com/waikato-datamining/instant-adams</url>
     <tag>HEAD</tag>
   </scm>
