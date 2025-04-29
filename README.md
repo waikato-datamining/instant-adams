@@ -7,7 +7,7 @@ and/or Redhat (`.rpm`).
 
 ## Command-line
 
-```commandline
+```
 Allows bootstrapping of ADAMS applications by simply supplying the modules.
 
 
@@ -103,7 +103,7 @@ Options:
 The following examples bootstrap an ADAMS application (from the 20.1.1 release) 
 with support for Weka, Groovy and Excel:
  
-```
+```bash
 java -jar instant-adams-0.1.4-spring-boot.jar \
   -C \
   -M adams-weka,adams-groovy,adams-excel \
@@ -138,7 +138,7 @@ public class BootstrapTest {
 
 The same, but compiled as Debian (.deb) package:
  
-```
+```bash
 java -jar instant-adams-0.1.4-spring-boot.jar \
   -C \
   -M adams-weka,adams-groovy,adams-excel \
