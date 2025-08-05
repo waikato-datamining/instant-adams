@@ -15,7 +15,7 @@
 
 /*
  * Main.java
- * Copyright (C) 2020 University of Waikato, Hamilton, NZ
+ * Copyright (C) 2020-2025 University of Waikato, Hamilton, NZ
  */
 
 package adams.bootstrap;
@@ -29,7 +29,7 @@ import com.github.fracpete.simpleargparse4j.ArgumentParser;
 import com.github.fracpete.simpleargparse4j.ArgumentParserException;
 import com.github.fracpete.simpleargparse4j.Namespace;
 import com.github.fracpete.simpleargparse4j.Option.Type;
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.SystemUtils;
 
 import java.io.File;
 import java.util.ArrayList;
